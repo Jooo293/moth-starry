@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>走进梵高的两幅画：从《帝王蛾》飞入《星月夜》</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#05070b;cursor:none}
+  body{display:flex;align-items:center;justify-content:center}
+  #stage{position:relative;overflow:hidden;background:#6f9f82}
+  canvas{display:block}
+  #veil{position:absolute;inset:0;background:#6f9f82;opacity:1;transition:opacity 2.2s ease,background-color 0s;pointer-events:none}
+
+  /* ---------- welcome wall: the two paintings, hung like in a gallery ---------- */
+  #intro{
+    --wall:#1e2d4a; --wall-lit:#2c4166; --moon:#ecc94b; --cream:#ece5c6; --mist:#a3b5cb; --frame:#2a2016;
+    position:fixed; inset:0; z-index:10; cursor:auto; color:var(--cream);
+    font-family:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","Iowan Old Style","Palatino Linotype",Palatino,serif;
+    background:
+      radial-gradient(ellipse 34% 52% at 30% 40%, var(--wall-lit), transparent 70%),
+      radial-gradient(ellipse 40% 52% at 70% 40%, var(--wall-lit), transparent 70%),
+      var(--wall);
+    display:grid; grid-template-rows:1fr auto; transition:opacity 1.4s ease;
+  }
+  #intro[hidden]{display:none}
+  #intro.leaving{opacity:0; pointer-events:none}
+  #intro .hang{position:relative; display:flex; align-items:center; justify-content:center; gap:clamp(48px,9vw,150px); padding:5vh 5vw 0}
+  #intro figure{margin:0; display:flex; flex-direction:column; align-items:flex-start}
+  #intro .frame{background:var(--frame); padding:clamp(6px,.7vw,11px);
+    box-shadow:inset 0 0 0 1px #4a3a26, 0 18px 40px -12px rgba(5,10,25,.75), 0 2px 6px rgba(5,10,25,.5)}
+  #intro img{display:block; width:auto}
+  #intro figure.moth img{height:min(54vh,30vw)}
+  #intro figure.starry img{height:min(44vh,34vw)}
+  #intro figcaption{margin-top:1.1em; font-size:13px; line-height:1.55; color:var(--mist); max-width:26em}
+  #intro figcaption b{display:block; font-weight:600; font-size:16px; color:var(--cream); letter-spacing:.02em}
+  #intro figcaption i{font-style:italic; font-family:"Iowan Old Style","Palatino Linotype",Palatino,serif}
+  #intro figcaption .role{display:block; margin-top:.35em; color:var(--moon)}
+  #intro svg.route{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible}
+  #intro svg.route path{fill:none; stroke:var(--moon); stroke-width:2; stroke-linecap:round; stroke-dasharray:2 9}
+  #intro svg.route circle{fill:var(--moon)}
+  #intro svg.route circle.ring{fill:none; stroke:var(--moon); stroke-width:1.5}
+  #intro .text{display:grid; grid-template-columns:auto minmax(0,34em) auto; align-items:end; justify-content:space-between; gap:2.5vw 4vw;
+    padding:3vh 3vw 4.5vh; border-top:1px solid rgba(236,229,198,.12); margin:0 6vw}
+  #intro h1{margin:0; font-weight:600; font-size:clamp(30px,3.4vw,52px); line-height:1.1; letter-spacing:.06em}
+  #intro p{margin:0; font-size:15px; line-height:1.85; color:var(--mist)}
+  #intro p strong{font-weight:600; color:var(--cream)}
+  #intro .go{display:flex; flex-direction:column; align-items:flex-start; gap:.7em}
+  #intro button{font:inherit; font-size:17px; letter-spacing:.08em; color:#1e2d4a; background:var(--moon);
+    border:0; border-radius:999px; padding:.8em 1.9em; cursor:pointer; transition:background .2s, transform .2s}
+  #intro button:hover:not(:disabled){background:#f6db72}
+  #intro button:active:not(:disabled){transform:scale(.97)}
+  #intro button:focus-visible{outline:2px solid var(--cream); outline-offset:4px}
+  #intro button:disabled{background:transparent; color:var(--mist); box-shadow:inset 0 0 0 1px rgba(163,181,203,.45); cursor:progress}
+  #intro .go small{font-size:12.5px; color:var(--mist)}
+  @media (max-width:900px), (max-aspect-ratio:1/1){
+    #intro{overflow:auto; grid-template-rows:auto auto}
+    #intro .hang{flex-direction:column; gap:7vh; padding-top:6vh}
+    #intro figure.moth img{height:auto; width:min(52vw,280px)}
+    #intro figure.starry img{height:auto; width:min(80vw,440px)}
+    #intro .text{grid-template-columns:1fr; padding:5vh 1vw 8vh}
+    #intro svg.route{display:none}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    #intro svg.route path{animation:route 3.2s .5s ease-in-out both}
+    #intro svg.route circle.ring{animation:ring 3.2s .5s both}
+  }
+  @keyframes route{from{stroke-dasharray:0 var(--len)} 99%{stroke-dasharray:2 9} to{stroke-dasharray:2 9}}
+  @keyframes ring{0%,85%{opacity:0} to{opacity:1}}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="stage"><div id="veil"></div></div>
+<section id="intro" aria-labelledby="intro-title">
+  <div class="hang">
+    <figure class="moth">
+      <div class="frame"><img src="assets/emperor-moth.webp" alt="梵高《帝王蛾》：一只蓝绿色的帝王蛾停在马蹄莲叶上，上方是红色浆果"></div>
+      <figcaption><b>帝王蛾</b><i>Emperor Moth</i>，1889 年，圣雷米<br>布面油画，阿姆斯特丹梵高博物馆藏<span class="role">镜头从这里起飞</span></figcaption>
+    </figure>
+    <figure class="starry">
+      <div class="frame"><img src="assets/starry-night.webp" alt="梵高《星月夜》：旋转的夜空、新月与星星，下方是柏树、山丘和村庄"></div>
+      <figcaption><b>星月夜</b><i>The Starry Night</i>，1889 年，圣雷米<br>布面油画，纽约现代艺术博物馆藏<span class="role">镜头在这里落幕</span></figcaption>
+    </figure>
+    <svg class="route" aria-hidden="true"><path/><circle r="4"/><circle class="ring" r="9"/></svg>
+  </div>
+  <div class="text">
+    <h1 id="intro-title">走进梵高的两幅画</h1>
+    <p>这个网站把经典画作变成一段连续的镜头。画里的帝王蛾会从叶子上起飞，穿过马蹄莲叶丛，一路飞进《星月夜》的旋涡星空。画面里的一切都来自这两幅原作，<strong>镜头一刻不停，约一分半钟。</strong></p>
+    <div class="go">
+      <button id="start" type="button" disabled>正在准备画面…</button>
+      <small>有背景音乐，建议开声音、全屏观看</small>
+    </div>
+  </div>
+</section>
+<script type="module">
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/* Assets. build.py fills these in two ways: as data: URIs for the single-file build (index.html, which
+ * runs straight off the disk), or as paths next to the page for the web build (site/, which streams
+ * them so the welcome wall appears at once). */
+const MOTH_SRC = 'assets/moth.webp';     // the emperor moth, cut out from Van Gogh's painting
+const MUSIC_URL = 'assets/music.mp3';   // set in the web build; empty when the song is embedded below
+const MUSIC_B64 = '';
+
+/* ---------------- seeded randomness (same film every run) ---------------- */
+let seed = 1889;
+function rng() { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+const R = (a, b) => a + (b - a) * rng();
+const pick = a => a[Math.floor(rng() * a.length)];
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const UP = V(0, 1, 0);
+const hexRGB = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const c255 = x => Math.round(clamp(x, 0, 255));
+function jit(h, a = 12) { const c = hexRGB(h), d = R(-a, a);
+  return `rgb(${c255(c[0] + d + R(-a, a) * .45)},${c255(c[1] + d + R(-a, a) * .45)},${c255(c[2] + d + R(-a, a) * .45)})`; }
+const rgb01 = (h, a = 0) => { const c = hexRGB(h), d = R(-a, a); return [clamp(c[0] / 255 + d, 0, 1), clamp(c[1] / 255 + d, 0, 1), clamp(c[2] / 255 + d, 0, 1)]; };
+
+/* ---------------- 9:16 stage ---------------- */
+const stage = document.getElementById('stage'), veil = document.getElementById('veil');
+// landscape, filling the whole window (fullscreen = the screen's own ratio); ?ar=16:9 letterboxes to an exact ratio
+const AR = (() => { const m = /^(\d+(?:\.\d+)?)[:x](\d+(?:\.\d+)?)$/.exec(new URLSearchParams(location.search).get('ar') || ''); return m ? m[1] / m[2] : 0; })();
+function stageSize() {
+  if (!AR) return [innerWidth, innerHeight];
+  let w = innerWidth, h = Math.round(w / AR); if (h > innerHeight) { h = innerHeight; w = Math.round(h * AR); } return [w, h];
+}
+// keep a ~68° horizontal view at any landscape ratio
+const fovFor = a => THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(34)) / Math.max(a, 1.2)));
+let [SW, SH] = stageSize();
+const Q = new URLSearchParams(location.search);
+let pr = Q.get('pr') ? clamp(+Q.get('pr'), .5, 3) : clamp(Math.max(devicePixelRatio, 1080 / SH), 1, 2);
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.insertBefore(renderer.domElement, veil);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+const camera = new THREE.PerspectiveCamera(44, 16 / 9, 0.05, 1600);
+
+/* ======================================================================
+ *  PAINTER — every procedural texture is "painted" with impasto strokes.
+ *  Each stroke is drawn twice: in colour, and in grey on a height canvas
+ *  (thick paint ridges) used for bump + displacement relief.
+ * ====================================================================== */
+class Painter {
+  constructor(w, h, bg, hbg = '#6a6a6a') {
+    this.w = w; this.h = h;
+    this.c = document.createElement('canvas'); this.c.width = w; this.c.height = h;
+    this.hc = document.createElement('canvas'); this.hc.width = w; this.hc.height = h;
+    this.x = this.c.getContext('2d'); this.hx = this.hc.getContext('2d');
+    this.both = [this.x, this.hx];
+    for (const c of this.both) { c.lineCap = 'round'; c.lineJoin = 'round'; }
+    if (bg) { this.x.fillStyle = bg; this.x.fillRect(0, 0, w, h); }
+    this.hx.fillStyle = hbg; this.hx.fillRect(0, 0, w, h);
+  }
+  gray(h) { const g = c255(h * 255); return `rgb(${g},${g},${g})`; }
+  _q(ctx, x, y, cx, cy, ex, ey, w, style, alpha = 1) {
+    ctx.globalAlpha = alpha; ctx.strokeStyle = style; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(cx, cy, ex, ey); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  // a single loaded-brush stroke with bristle streaks
+  sweep(x, y, a, len, curv, w, col, h = R(.5, .9), alpha = 1) {
+    const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len;
+    const nx = -Math.sin(a), ny = Math.cos(a);
+    const cx = (x + ex) / 2 + nx * curv * len, cy = (y + ey) / 2 + ny * curv * len;
+    this._q(this.x, x, y, cx, cy, ex, ey, w, col, alpha);
+    this._q(this.hx, x, y, cx, cy, ex, ey, w, this.gray(h));
+    const nb = w > 5 ? 2 + (rng() * 2 | 0) : 0;
+    for (let k = 0; k < nb; k++) {
+      const o = R(-.38, .38) * w, lw = Math.max(1, w * R(.1, .22)), light = rng() < .5;
+      const args = [x + nx * o, y + ny * o, cx + nx * o, cy + ny * o, ex + nx * o * .8, ey + ny * o * .8, lw];
+      this._q(this.x, ...args, light ? `rgba(255,250,220,${.24 * alpha})` : `rgba(10,30,40,${.2 * alpha})`);
+      this._q(this.hx, ...args, this.gray(h + (light ? .16 : -.16)));
+    }
+  }
+  disc(x, y, r, col, h = .8) {
+    for (const [ctx, st] of [[this.x, col], [this.hx, this.gray(h)]]) {
+      ctx.fillStyle = st; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  arcStroke(x, y, r, a0, a1, w, col, h = .85, alpha = 1) {
+    for (const [ctx, st] of [[this.x, col], [this.hx, this.gray(h)]]) {
+      ctx.globalAlpha = ctx === this.x ? alpha : 1;
+      ctx.strokeStyle = st; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(x, y, r, a0, a1); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+  textures(repeat = false) {
+    const map = new THREE.CanvasTexture(this.c); map.colorSpace = THREE.SRGBColorSpace;
+    const bump = new THREE.CanvasTexture(this.hc);
+    for (const t of [map, bump]) { t.anisotropy = ANISO; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+    return { map, bump };
+  }
+}
+const tick = () => new Promise(r => setTimeout(r, 0));
+await tick();
+
+/* ======================================================================
+ *  PART 1 — EMPEROR MOTH FOLIAGE (palette sampled from the painting)
+ * ====================================================================== */
+const LEAF_PALETTES = [
+  { base: ['#a9cf9a', '#b8d8a3', '#9dc79a', '#c3dba6', '#aed3a4'], light: ['#dfe3a8', '#e9e6b1', '#d3dc9b'], vein: '#ece6a5', edge: '#2c5638', edge2: '#4f8a5c' },
+  { base: ['#a6ad4e', '#b4b15a', '#98a246', '#bdb866', '#a9a952'], light: ['#d8d17d', '#cfc76c', '#e3d98b'], vein: '#e2db8c', edge: '#36552a', edge2: '#5f7f3a' },
+  { base: ['#7ea852', '#8bb35b', '#6f9c4c', '#94b865', '#82ab58'], light: ['#b8cc78', '#c8d488'], vein: '#d5d68b', edge: '#26472d', edge2: '#4d7a40' },
+  { base: ['#5c8a3e', '#4f7d3a', '#668f44', '#6f9a4a', '#58853f'], light: ['#8fb060', '#9cb86a'], vein: '#a8bf6f', edge: '#1c3925', edge2: '#36623a' },
+  { base: ['#5fa088', '#6fae92', '#4f9180', '#7bb89a', '#66a68c'], light: ['#a7cfa7', '#bcd9ae'], vein: '#cfe0b0', edge: '#1e4a40', edge2: '#357060' },
+  { base: ['#c2ce86', '#cbd18e', '#b5c57b', '#bfcb83'], light: ['#e8e4a4', '#efe8b3'], vein: '#f2ecb8', edge: '#3c683d', edge2: '#6f9a55' },
+];
+const PAL_WEIGHTS = [0.22, 0.19, 0.2, 0.11, 0.13, 0.15];
+function pickPalette() { let r = rng(), i = 0; while (i < PAL_WEIGHTS.length - 1 && (r -= PAL_WEIGHTS[i]) > 0) i++; return i; }
+
+function leafTexture(pal) {
+  const W = 320, H = 1024, p = new Painter(W, H, pal.base[0], '#6e6e6e');
+  for (let i = 0; i < 520; i++) {
+    const y = R(-40, H + 40), side = rng() < .5 ? -1 : 1, x0 = W / 2 + side * R(-6, W * .22);
+    const a = side > 0 ? -R(.35, 1.05) : -Math.PI + R(.35, 1.05);
+    p.sweep(x0, y, a, R(60, 170), R(-.22, .22), R(10, 24), jit(pick(pal.base), 13), R(.4, .8));
+  }
+  for (let i = 0; i < 130; i++) {
+    const side = rng() < .5 ? -1 : 1, a = side > 0 ? -R(.6, 1.3) : -Math.PI + R(.6, 1.3);
+    p.sweep(W / 2 + side * R(0, W * .3), R(0, H), a, R(40, 130), R(-.2, .2), R(6, 15), jit(pick(pal.light), 10), R(.7, 1));
+  }
+  for (let k = 0; k < 5; k++) { let y = H + 10;
+    while (y > -10) { const l = R(60, 140);
+      p.sweep(W / 2 + R(-9, 9), y, -Math.PI / 2 + R(-.1, .1), l, R(-.08, .08), R(5, 12) * (.55 + y / H * .6), jit(pal.vein, 10), R(.85, 1));
+      y -= l * .8; } }
+  for (const side of [0, 1]) for (const [x0, x1, wa, wb, col, al] of [[3, 13, 13, 20, pal.edge, 1], [18, 32, 6, 11, pal.edge2, .85]]) {
+    let y = H + 10;
+    while (y > -10) { const l = R(50, 120), x = side ? W - R(x0, x1) : R(x0, x1);
+      p.sweep(x, y, -Math.PI / 2 + R(-.07, .07), l, R(-.05, .05), R(wa, wb), jit(col, 8), R(.75, 1), al);
+      y -= l * .75; }
+  }
+  return p.textures();
+}
+function berryTexture() {
+  const p = new Painter(256, 128, '#c63a22', '#808080');
+  for (let i = 0; i < 160; i++) p.sweep(R(0, 256), R(10, 118), R(0, 6.28), R(10, 34), R(-.6, .6), R(4, 10),
+    jit(pick(['#e2662f', '#b02a1a', '#d24a26', '#ef8a3c', '#9b2316']), 10), R(.5, 1));
+  for (let i = 0; i < 14; i++) p.sweep(R(0, 256), R(14, 40), R(-.4, .4), R(16, 40), .4, R(5, 9), jit('#f4a35e', 8), 1);
+  return p.textures(true);
+}
+function groundTexture(bg, pal, accents, n = 2600) {
+  const p = new Painter(1024, 1024, bg, '#707070');
+  for (let i = 0; i < n; i++) p.sweep(R(-40, 1064), R(-40, 1064), -0.7 + R(-.5, .5), R(30, 90), R(-.2, .2), R(8, 18), jit(pick(pal), 12), R(.4, .9));
+  for (let i = 0; i < 380; i++) p.sweep(R(0, 1024), R(0, 1024), -1.0 + R(-.4, .4), R(18, 45), R(-.2, .2), R(4, 8), jit(pick(accents), 8), R(.8, 1));
+  return p.textures(true);
+}
+function foliageBackdrop() {
+  const W = 2048, H = 1024, p = new Painter(W, H, '#4f9a84');
+  const sky = ['#3f8f7c', '#4f9c86', '#6fb29a', '#8cc4a8', '#a9d2b2', '#5aa08a', '#79b89d'];
+  for (let i = 0; i < 5200; i++) { const y = R(-60, H * .54), hz = smooth(H * .3, H * .52, y);
+    const col = rng() < hz * .7 ? jit(pick(['#79ab8f', '#82b293', '#73a68b']), 8) : jit(pick(sky), 13);
+    p.sweep(R(-20, W + 20), y, -Math.PI / 2 + R(-.12, .12), R(40, 180), R(-.08, .08), R(6, 16), col, .5); }
+  for (let i = 0; i < 420; i++) p.sweep(R(0, W), R(0, H * .45), -Math.PI / 2 + R(-.1, .1), R(60, 200), R(-.05, .05), R(4, 9), jit('#cfe0b4', 10), .5, .8);
+  for (let i = 0; i < 520; i++) p.sweep(R(0, W), R(0, H * .45), -Math.PI / 2 + R(-.1, .1), R(60, 220), R(-.05, .05), R(2, 5), jit('#2a6655', 10), .5, .7);
+  for (let i = 0; i < 2600; i++) { const y = R(H * .5, H + 40);
+    p.sweep(R(-20, W + 20), y, -0.6 + R(-.4, .4), R(30, 90), R(-.2, .2), R(8, 16),
+      jit(pick(y < H * .58 ? ['#79ab8f', '#86b192', '#7fa98a'] : ['#a2a852', '#8f9e4c', '#b3b25e', '#7d9a5a']), 10), .5); }
+  // melt the painted backdrop into the fog colour towards the horizon (no hard edge against the fogged ground)
+  const g = p.x.createLinearGradient(0, H * .3, 0, H * .52);
+  g.addColorStop(0, 'rgba(121,171,143,0)'); g.addColorStop(.75, 'rgba(121,171,143,.85)'); g.addColorStop(1, 'rgba(121,171,143,1)');
+  p.x.fillStyle = g; p.x.fillRect(0, H * .3, W, H * .7);
+  const t = p.textures(true).map; t.repeat.set(3, 1);
+  return t;
+}
+
+/* ---------------- calla leaf: a true curved 3D surface ---------------- */
+function leafSpec(len, broad = false) {
+  return { len, wid: len * (broad ? R(.24, .32) : R(.13, .21)), bend: len * R(.15, .75), sway: len * R(-.15, .15),
+    droop: R(0, .32), twist: R(-.9, .9), cup: R(.15, .45), fold: R(0, .4), ruffle: broad ? R(.08, .14) : R(.02, .07),
+    stalk: broad ? R(.1, .18) : R(.2, .34), shape: R(.45, .68), wave: broad ? R(.07, .13) : R(.02, .07), waveF: R(8, 22), ph: R(0, 6.28) };
+}
+function leafGeometry(o, SU = 14, SV = 56) {
+  const L = o.len;
+  const P0 = V(), P1 = V(o.sway * .2, L * .45, o.bend * .05), P2 = V(o.sway, L * .88, o.bend * .5), P3 = V(o.sway * 1.3, L * (.82 - o.droop), o.bend);
+  const D0 = P1.clone().sub(P0), D1 = P2.clone().sub(P1), D2 = P3.clone().sub(P2);
+  const frame = v => {
+    const u = 1 - v;
+    const p = V().addScaledVector(P0, u * u * u).addScaledVector(P1, 3 * u * u * v).addScaledVector(P2, 3 * u * v * v).addScaledVector(P3, v * v * v);
+    const T = V().addScaledVector(D0, 3 * u * u).addScaledVector(D1, 6 * u * v).addScaledVector(D2, 3 * v * v).normalize();
+    const ref = V(1, 0, 0), B = ref.addScaledVector(T, -ref.dot(T)).normalize(), N = V().crossVectors(B, T);
+    const tw = o.twist * v * v, c = Math.cos(tw), s = Math.sin(tw);
+    return { p, T, B: B.clone().multiplyScalar(c).addScaledVector(N, s), N: N.clone().multiplyScalar(c).addScaledVector(B, -s) };
+  };
+  const widthAt = v => {
+    const sw = o.wid * .06;
+    if (v <= o.stalk) return sw;
+    const b = (v - o.stalk) / (1 - o.stalk);
+    let w = Math.pow(Math.sin(Math.PI * Math.pow(b, o.shape)), .9);
+    w *= 1 + o.wave * Math.sin(b * o.waveF + o.ph) * Math.min(1, b * 4);
+    const k = smooth(0, .12, b);
+    return sw * (1 - k) + o.wid * w * k;
+  };
+  const pos = [], uv = [], idx = [];
+  for (let j = 0; j <= SV; j++) {
+    const v = j / SV, f = frame(v), w = widthAt(v);
+    for (let i = 0; i <= SU; i++) {
+      const u = i / SU * 2 - 1, au = Math.abs(u);
+      const nOff = w * (o.cup * u * u - o.fold * au * .3 + o.ruffle * Math.sin(v * o.waveF * 1.7 + o.ph + u * 1.3) * au * au);
+      pos.push(f.p.x + f.B.x * w * u + f.N.x * nOff, f.p.y + f.B.y * w * u + f.N.y * nOff, f.p.z + f.B.z * w * u + f.N.z * nOff);
+      uv.push((u + 1) / 2, v);
+    }
+  }
+  for (let j = 0; j < SV; j++) for (let i = 0; i < SU; i++) {
+    const a = j * (SU + 1) + i, b = a + 1, c = a + SU + 1, d = c + 1; idx.push(a, b, c, b, d, c);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx); g.computeVertexNormals();
+  return { geo: g, frame };
+}
+
+/* ---------------- scene A ---------------- */
+const sceneA = new THREE.Scene();
+const FOG_A = new THREE.Color('#79ab8f');
+sceneA.fog = new THREE.Fog(FOG_A, 11, 58);
+sceneA.add(new THREE.HemisphereLight('#f3f6dc', '#7e9668', 2.35));
+{ const sun = new THREE.DirectionalLight('#fff0d0', 1.45); sun.position.set(-4, 9, 5); sceneA.add(sun); }
+const GROUND = -3;
+
+const leafTex = LEAF_PALETTES.map(pal => [leafTexture(pal), leafTexture(pal)]);
+await tick();
+const leafMats = leafTex.flat().map(t => new THREE.MeshLambertMaterial({ map: t.map, bumpMap: t.bump, bumpScale: 3.2,
+  displacementMap: t.bump, displacementScale: .045, displacementBias: -.025, side: THREE.DoubleSide, vertexColors: true }));
+function tint(geo) {
+  const r = R(.93, 1.06), g = R(.95, 1.04), b = R(.93, 1.04), n = geo.attributes.position.count, c = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { c[i * 3] = r; c[i * 3 + 1] = g; c[i * 3 + 2] = b; }
+  geo.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  return geo;
+}
+function leafMesh(spec, pi, SU, SV) {
+  const L = leafGeometry(spec, SU, SV), ti = pi * 2 + (rng() * 2 | 0);
+  const m = new THREE.Mesh(tint(L.geo), leafMats[ti]);
+  m.userData = { frame: L.frame, ti };
+  return m;
+}
+const bins = new Map();
+function bake(m) {
+  const k = `${m.userData.ti}|${Math.floor(m.position.z / 16)}`;
+  if (!bins.has(k)) bins.set(k, []);
+  bins.get(k).push(m.geometry.applyMatrix4(m.matrixWorld));
+}
+function flushBins() {
+  for (const [k, list] of bins) sceneA.add(new THREE.Mesh(mergeGeometries(list), leafMats[+k.split('|')[0]]));
+  bins.clear();
+}
+
+/* the leaf the moth rests on, in its pose from the painting */
+const HEAD = V(0.45, 0, -0.9).normalize();
+const restSpec = { len: 3.7, wid: 1.0, bend: 3.1, sway: .12, droop: .28, twist: .12, cup: .06, fold: 0, ruffle: .02,
+  stalk: .22, shape: .5, wave: .04, waveF: 12, ph: 1 };
+const restLeaf = leafMesh(restSpec, 0, 18, 64);
+restLeaf.rotation.set(0, Math.atan2(HEAD.x, HEAD.z), 0, 'YXZ');
+restLeaf.updateMatrixWorld(true);
+const rf = restLeaf.userData.frame(.6);
+const rq = new THREE.Quaternion().setFromRotationMatrix(restLeaf.matrixWorld);
+const restPt = rf.p.clone().applyQuaternion(rq);
+restLeaf.position.set(-restPt.x, GROUND, -restPt.z);
+restLeaf.updateMatrixWorld(true);
+const restN = rf.N.clone().applyQuaternion(rq); if (restN.y < 0) restN.negate();
+const restT = rf.T.clone().applyQuaternion(rq);
+const S0 = V(0, GROUND + restPt.y, 0).addScaledVector(restN, .1);
+sceneA.add(restLeaf);
+
+/* ======================================================================
+ *  THE FLIGHT — one continuous path: foliage → climb → Starry Night
+ * ====================================================================== */
+const ctrl = [S0.clone(), S0.clone().addScaledVector(HEAD, 1.3).add(V(0, .35, 0)), S0.clone().addScaledVector(HEAD, 2.8).add(V(0, .85, 0))];
+for (let i = 0; i < 9; i++) { const last = ctrl[ctrl.length - 1];
+  ctrl.push(V(1.8 * Math.sin(i * .6 + .9) + R(-.5, .5), .2 + .8 * Math.sin(i * .83 + 1.9) + R(-.2, .2), last.z - R(4.6, 6))); }
+const iClimb0 = ctrl.length - 1;
+for (const rise of [1.0, 2.0, 2.8, 3.2, 3.2, 2.7, 1.8]) { const last = ctrl[ctrl.length - 1];
+  ctrl.push(V(last.x * .6 + R(-.6, .6), last.y + rise, last.z - 5.6)); }
+const iClimb1 = ctrl.length - 1;
+const Y_B = ctrl[iClimb1].y;
+for (let i = 0; i < 19; i++) { const last = ctrl[ctrl.length - 1];
+  ctrl.push(V(4.0 * Math.sin(i * .45 + .3) + R(-.6, .6), Y_B + 2.2 * Math.sin(i * .6 + 1.1), last.z - R(5.6, 6.4))); }
+const curve = new THREE.CatmullRomCurve3(ctrl, false, 'centripetal');
+curve.arcLengthDivisions = 6000;
+const PATH_LEN = curve.getLength();
+function frameAt(s) {
+  const u = clamp(s / PATH_LEN, 0, 1), p = curve.getPointAt(u), T = curve.getTangentAt(u);
+  if (s < 0) p.addScaledVector(T, s); else if (s > PATH_LEN) p.addScaledVector(T, s - PATH_LEN);
+  const Th = V(T.x, 0, T.z).normalize(), Lat = V().crossVectors(Th, UP).normalize();
+  return { p, T, Th, Lat };
+}
+function sWhere(pred) { for (let s = 0; s <= PATH_LEN; s += .1) if (pred(frameAt(s).p)) return s; return PATH_LEN; }
+const sClimb0 = sWhere(p => p.z < ctrl[iClimb0].z), sClimb1 = sWhere(p => p.z < ctrl[iClimb1].z);
+const sFade0 = sWhere(p => p.z < ctrl[iClimb0].z - 6 && p.y > 5.5), sFade1 = sWhere(p => p.z < ctrl[iClimb0].z - 6 && p.y > Y_B - 3);
+const sB0 = sFade1;
+const fadeAt = s => smooth(sFade0, sFade1, s);
+const climbW = s => smooth(sClimb0, sClimb0 + 8, s) * (1 - smooth(sClimb1 - 6, sClimb1 + 4, s));
+
+// camera rig: behind and slightly to the right of the moth
+const camBack = s => 2.85 + .2 * Math.sin(s * .05 + 1);
+const camUp = s => 1.4 + .15 * Math.sin(s * .037) - .3 * fadeAt(s);
+const camSide = s => .75 + .2 * Math.sin(s * .045 + .6);
+function followCam(s, out = V()) {
+  const f = frameAt(s);
+  return out.copy(f.p).addScaledVector(f.Th, -camBack(s)).addScaledVector(UP, camUp(s)).addScaledVector(f.Lat, camSide(s));
+}
+const OPEN_DIR = HEAD.clone().applyAxisAngle(UP, .32);
+const OPEN_CAM = S0.clone().add(V(0, 2.9, 0)).addScaledVector(OPEN_DIR, -1.1);
+const OPEN_TGT = S0.clone().addScaledVector(HEAD, .2);
+const VCRUISE = 2.5;
+const speedAt = (t, s) => VCRUISE * smooth(3.0, 7.0, t) * (1 - .14 * climbW(s));
+const camBlend = t => smooth(3.2, 10, t);
+
+/* ---- clearance field: no leaf may cut the moth's flight tube or the lens ---- */
+const CELL = 1.5, grid = new Map();
+const gkey = (x, y, z) => `${Math.floor(x / CELL)},${Math.floor(y / CELL)},${Math.floor(z / CELL)}`;
+function addSample(p, r) { const k = gkey(p.x, p.y, p.z); if (!grid.has(k)) grid.set(k, []); grid.get(k).push([p.x, p.y, p.z, r * r]); }
+function blocked(x, y, z) {
+  const cx = Math.floor(x / CELL), cy = Math.floor(y / CELL), cz = Math.floor(z / CELL);
+  for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) {
+    const l = grid.get(`${cx + a},${cy + b},${cz + c}`); if (!l) continue;
+    for (const q of l) { const dx = x - q[0], dy = y - q[1], dz = z - q[2]; if (dx * dx + dy * dy + dz * dz < q[3]) return true; }
+  }
+  return false;
+}
+for (let s = 0; s <= PATH_LEN; s += .2) {
+  const p = frameAt(s).p, c = followCam(s);
+  addSample(p, s < 1.2 ? .6 : 1.05); addSample(c, .7);
+  // a thin sight corridor: leaves may cross the wings, but never hide the whole moth for long
+  for (const k of [.3, .5, .7]) addSample(c.clone().lerp(p, k), .32);
+}
+{ let s = 0;
+  for (let t = 0; t < 14; t += .04) { s += speedAt(t, s) * .04; addSample(OPEN_CAM.clone().lerp(followCam(s), camBlend(t)), .7); }
+  // keep the opening view of the resting moth unobstructed (its whole wingspan, up to the lens)
+  const side = V().crossVectors(HEAD, UP).normalize();
+  for (let u = -1; u <= 1; u += .25) for (let k = .05; k < .9; k += .04)
+    addSample(S0.clone().addScaledVector(side, u * .95).addScaledVector(UP, .12).lerp(OPEN_CAM, k), .42 + .25 * k); }
+function leafBlocked(m) {
+  const pa = m.geometry.attributes.position, v = V();
+  for (let i = 0; i < pa.count; i += 3) { v.fromBufferAttribute(pa, i).applyMatrix4(m.matrixWorld); if (blocked(v.x, v.y, v.z)) return true; }
+  return false;
+}
+function plantLeaf(spec, base, yaw, pi, SU, SV) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const m = leafMesh(spec, pi, SU, SV);
+    m.position.copy(base); m.rotation.set(R(-.12, .12), yaw, R(-.12, .12), 'YXZ'); m.updateMatrixWorld(true);
+    if (!leafBlocked(m)) { bake(m); return m; }
+    m.geometry.dispose();
+    yaw += R(-1.6, 1.6);
+    if (attempt >= 2) { spec.len *= .84; spec.wid *= .87; spec.bend *= .82; spec.sway *= .8; }
+  }
+  return null;
+}
+await tick();
+
+/* ---- foliage ---- */
+const yawToward = d => Math.atan2(d.x, d.z);
+const S_FOLIAGE_END = sFade1 + 22;
+for (let i = 0; i < 46; i++) {           // the cluster around the resting moth (the painting's composition)
+  const a = R(0, 6.283), r = R(1.0, 4.6), base = V(S0.x + Math.cos(a) * r, GROUND, S0.z + Math.sin(a) * r);
+  const toward = V(S0.x - base.x, 0, S0.z - base.z).normalize();
+  const yaw = rng() < .55 ? yawToward(toward) + R(-.6, .6) : R(0, 6.28);
+  const pi = pickPalette(), spec = leafSpec(R(2.2, 5.4), pi === 3 || rng() < .2);
+  if (rng() < .5) { spec.bend = spec.len * R(.6, .9); spec.droop = R(.25, .45); }
+  plantLeaf(spec, base, yaw, pi, 14, 56);
+}
+for (let s = -4; s < S_FOLIAGE_END; s += .3) {      // near layer along the flight
+  const f = frameAt(s), side = rng() < .5 ? -1 : 1, lat = .8 + Math.pow(rng(), 1.3) * 4.6;
+  const base = f.p.clone().addScaledVector(f.Lat, side * lat).addScaledVector(f.Th, R(-.4, .4)); base.y = GROUND;
+  const yaw = lat < 2.8 && rng() < .6 ? yawToward(f.Lat.clone().multiplyScalar(-side).addScaledVector(f.Th, R(-.5, .5))) : R(0, 6.28);
+  const pi = pickPalette();
+  plantLeaf(leafSpec(R(3.2, 7.6), pi === 3), base, yaw, pi, lat < 3 ? 14 : 10, lat < 3 ? 56 : 40);
+}
+await tick();
+for (let s = 2; s < S_FOLIAGE_END; s += .9) {        // tall leaves arching over the flight (a vault of foliage)
+  const f = frameAt(s), side = rng() < .5 ? -1 : 1, lat = R(1.8, 3.6);
+  const base = f.p.clone().addScaledVector(f.Lat, side * lat).addScaledVector(f.Th, R(-.5, .5)); base.y = GROUND;
+  const spec = leafSpec(R(6.5, 9.5)); spec.bend = spec.len * R(.45, .75); spec.droop = R(.05, .25);
+  plantLeaf(spec, base, yawToward(f.Lat.clone().multiplyScalar(-side).addScaledVector(f.Th, R(-.6, .6))), pickPalette(), 12, 52);
+}
+for (let s = -4; s < S_FOLIAGE_END; s += .25) {     // low ground-cover leaves
+  const f = frameAt(s), base = f.p.clone().addScaledVector(f.Lat, (rng() < .5 ? -1 : 1) * R(.5, 7)).addScaledVector(f.Th, R(-.4, .4));
+  base.y = GROUND;
+  const spec = leafSpec(R(1.4, 2.9), rng() < .4); spec.bend = spec.len * R(.6, 1); spec.droop = R(.3, .55);
+  plantLeaf(spec, base, R(0, 6.28), pickPalette(), 8, 26);
+}
+await tick();
+for (let s = -6; s < S_FOLIAGE_END + 25; s += .9) for (const side of [-1, 1]) {   // mid / far layers
+  if (rng() < .2) continue;
+  const f = frameAt(s), base = f.p.clone().addScaledVector(f.Lat, side * R(5.5, 13)).addScaledVector(f.Th, R(-.6, .6)); base.y = GROUND;
+  const pi = pickPalette();
+  plantLeaf(leafSpec(R(5, 10), pi === 3), base, R(0, 6.28), pi, 8, 28);
+}
+flushBins();
+await tick();
+
+/* ---- red berry clusters ---- */
+{
+  const stalkMat = new THREE.MeshLambertMaterial({ map: leafTex[2][0].map, bumpMap: leafTex[2][0].bump, bumpScale: 2 });
+  const berries = [];
+  const addCluster = top => {
+    const base = V(top.x + R(-.5, .5), GROUND, top.z + R(-.5, .5));
+    const mid = base.clone().lerp(top, .62).add(V(R(-.35, .35), 0, R(-.35, .35)));
+    const c = new THREE.CatmullRomCurve3([base, mid, top, top.clone().add(V(R(-.15, .15), .1, R(-.15, .15)))]);
+    sceneA.add(new THREE.Mesh(new THREE.TubeGeometry(c, 48, .03, 6, false), stalkMat));
+    const n = Math.floor(R(13, 20)), spike = R(.5, .75), axis = c.getTangentAt(.9).normalize();
+    const a1 = V().crossVectors(axis, Math.abs(axis.y) < .9 ? UP : V(1, 0, 0)).normalize(), a2 = V().crossVectors(axis, a1);
+    for (let i = 0; i < n; i++) {
+      const tt = i / (n - 1), ang = i * 2.39996, rad = .085 * (1 - .35 * tt);
+      berries.push({ p: top.clone().addScaledVector(axis, tt * spike - .12).addScaledVector(a1, Math.cos(ang) * rad).addScaledVector(a2, Math.sin(ang) * rad), r: R(.062, .082) * (1 - .25 * tt) });
+    }
+  };
+  const placeCluster = (s, side, up) => {
+    const f = frameAt(s);
+    for (let lat = 1.45; lat < 3.2; lat += .3) {
+      const top = f.p.clone().addScaledVector(f.Lat, side * lat).addScaledVector(UP, up);
+      if (!blocked(top.x, top.y, top.z) && !blocked(top.x, top.y + .6, top.z)) { addCluster(top); return; }
+    }
+  };
+  placeCluster(3.4, -1, .15);       // the two clusters at the top of the painting — the moth flies between them
+  placeCluster(5.6, 1, .35);
+  for (let s = 14; s < sClimb0 + 6; s += R(9, 13)) placeCluster(s, rng() < .5 ? -1 : 1, R(-.1, .5));
+  const bt = berryTexture();
+  const inst = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 20, 14),
+    new THREE.MeshLambertMaterial({ map: bt.map, bumpMap: bt.bump, bumpScale: 2, emissive: '#3a0a04' }), berries.length);
+  const hull = new THREE.InstancedMesh(new THREE.SphereGeometry(1.14, 16, 10), new THREE.MeshBasicMaterial({ color: '#4a1810', side: THREE.BackSide }), berries.length);
+  const m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), col = new THREE.Color();
+  berries.forEach((b, i) => {
+    qq.setFromEuler(new THREE.Euler(R(0, 6), R(0, 6), R(0, 6)));
+    m4.compose(b.p, qq, V(b.r, b.r, b.r)); inst.setMatrixAt(i, m4); hull.setMatrixAt(i, m4);
+    inst.setColorAt(i, col.setRGB(1, R(.8, 1.05), R(.8, 1.05)));
+  });
+  sceneA.add(inst, hull);
+}
+{
+  const g = groundTexture('#a4aa56', ['#b3b25e', '#a2a852', '#c2be6e', '#8f9e4c', '#6e8f52', '#d0c880', '#99a858', '#b9b966'], ['#3f6f5a', '#4d7f66', '#2f5b55', '#5f8c7a']);
+  for (const t of [g.map, g.bump]) t.repeat.set(70, 70);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(460, 460), new THREE.MeshLambertMaterial({ map: g.map, bumpMap: g.bump, bumpScale: 3 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(0, GROUND, -60);
+  sceneA.add(ground);
+}
+const backdropA = new THREE.Mesh(new THREE.SphereGeometry(400, 48, 24),
+  new THREE.MeshBasicMaterial({ map: foliageBackdrop(), side: THREE.BackSide, fog: false, depthWrite: false }));
+backdropA.renderOrder = -1;
+sceneA.add(backdropA);
+await tick();
+
+/* ======================================================================
+ *  PART 2 — THE STARRY NIGHT (palette taken from the painting)
+ * ====================================================================== */
+const sceneB = new THREE.Scene();
+const FOG_B = new THREE.Color('#2f4f88');
+sceneB.fog = new THREE.Fog(FOG_B, 90, 640);
+sceneB.add(new THREE.HemisphereLight('#bcd2f6', '#2a3a6a', 2.3));
+const skyDir = (az, el) => V(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
+const MOON = { az: .2, el: .3, R: .068 };
+{ const moonLight = new THREE.DirectionalLight('#f4f0d8', 1.0); moonLight.position.copy(skyDir(MOON.az, MOON.el)).multiplyScalar(100); sceneB.add(moonLight); }
+const U_TIME = { value: 0 };
+const YG = -62;                                   // the valley floor, far below the flight
+const fB0 = frameAt(sB0);
+
+/* painting layout → sky directions (x,y in the painting, 0..1) */
+const PAINT_STARS = [[.11, .05, 1], [.235, .03, .9], [.345, .04, 1], [.415, .06, .85], [.61, .09, 1.05], [.24, .17, 1.1],
+  [.33, .32, .95], [.705, .235, 1.05], [.05, .45, .8], [.135, .475, 1], [.355, .53, 1.35]];
+const paintToSky = (x, y) => ({ az: (x - .5) * .62, el: (.62 - y) * .72 });
+const SKY_VORT = [];   // [az, el, radius, spin] + [kind, ringFreq, rotSpeed, 0]
+{ const s1 = paintToSky(.5, .33), s2 = paintToSky(.72, .45);
+  SKY_VORT.push([s1.az, s1.el, .1, 1, 0, 3.2, .05, 0], [s2.az, s2.el, .06, 1, 0, 2.6, .065, 0], [MOON.az, MOON.el, MOON.R, .8, 2, 4.5, .03, 0]);
+  for (const [x, y, k] of PAINT_STARS) { const d = paintToSky(x, y); SKY_VORT.push([d.az, d.el, .03 * k, .9, 1, 3.2, .06, 0]); } }
+
+/* ---- the swirling painted sky dome: brush strokes following a vortex flow field ---- */
+const NV = SKY_VORT.length;
+const dome = new THREE.Mesh(new THREE.SphereGeometry(600, 96, 48), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { uTime: U_TIME, uV: { value: SKY_VORT.map(v => new THREE.Vector4(v[0], v[1], v[2], v[3])) },
+    uC: { value: SKY_VORT.map(v => new THREE.Vector4(v[4], v[5], v[6], v[7])) } },
+  vertexShader: `varying vec3 vDir;
+    void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    #define NV ${NV}
+    uniform float uTime; uniform vec4 uV[NV]; uniform vec4 uC[NV]; varying vec3 vDir;
+    vec2 hash2(vec2 p){ p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }
+    float hash1(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
+    vec3 Lin(vec3 c){ return pow(c, vec3(2.2)); }
+    vec3 pick4(vec3 a, vec3 b, vec3 c, vec3 d, float h){ return h < .25 ? a : h < .5 ? b : h < .75 ? c : d; }
+    void main(){
+      vec3 dir = normalize(vDir);
+      vec2 q = vec2(atan(dir.x, -dir.z), asin(clamp(dir.y, -1., 1.)));
+      vec2 qa = q;
+      vec2 flow = vec2(1., .16 * sin(q.x * 3.1 + q.y * 4.7) + .1 * sin(q.x * 8.3 - 1.7 + q.y * 2.));
+      float ringL = 0., yel = 0.;
+      for (int i = 0; i < NV; i++) {
+        vec2 c = uV[i].xy; float Rr = uV[i].z;
+        vec2 d = qa - c; float r = length(d);
+        float fall = exp(-r * r / (Rr * Rr * 2.4));
+        float ang = -uC[i].z * uTime * fall;                     // slow swirl, faster at the eye
+        float cs = cos(ang), sn = sin(ang);
+        d = mat2(cs, sn, -sn, cs) * d; qa = c + d;
+        flow += uV[i].w * (vec2(-d.y, d.x) - .22 * d) / (r + .25 * Rr) * fall * 3.;
+        float ring = .5 + .5 * sin(r / Rr * uC[i].y * 6.2832 - uTime * .25);
+        if (uC[i].x < .5) ringL = max(ringL, fall * ring);
+        else yel = max(yel, exp(-r * r / (Rr * Rr * 1.5)) * (.5 + .5 * ring));
+      }
+      float bandEl = .12 + .05 * sin(q.x * 3.3 + .6) - .1 * q.x;
+      float band = exp(-pow((q.y - bandEl) / .05, 2.));
+      flow += vec2(1., -.1 + .165 * cos(q.x * 3.3 + .6)) * band * 1.6;
+      float hz = 1. - smoothstep(-.03, .16, q.y);
+      vec2 fd = normalize(flow), fn = vec2(-fd.y, fd.x);
+      const float K = 68.;
+      vec3 col = mix(Lin(vec3(.12, .22, .5)), Lin(vec3(.3, .46, .66)), clamp(hz * .8 + band * .35, 0., 1.));
+      col *= .85 + .15 * hash1(floor(qa * K * .5));
+      for (int layer = 0; layer < 2; layer++) {
+        vec2 off = float(layer) * vec2(.5, .37);
+        vec2 g = qa * K + off, cell = floor(g);
+        float best = -1., bdist = 0., bacr = 0.; vec2 bh = vec2(0.);
+        for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+          vec2 c = cell + vec2(float(i), float(j));
+          vec2 h = hash2(c + float(layer) * 19.7);
+          vec2 d = g - (c + h);
+          float along = dot(d, fd), acr = dot(d, fn);
+          float Ln = .55 + .3 * h.x, Wd = .2 + .12 * h.y;
+          float t = clamp(along, -Ln, Ln);
+          float taper = 1. - .45 * (t / Ln) * (t / Ln);                 // loaded brush: fat middle, thin ends
+          float dist = length(vec2((along - t) * 1.6, acr)) / (Wd * taper);
+          float pri = hash1(c * 1.7 + float(layer) * 5.3);
+          if (dist < 1. && pri > best) { best = pri; bh = h; bdist = dist; bacr = acr / Wd; }
+        }
+        if (best >= 0.) {
+          float h3 = hash1(bh * 91.7 + float(layer)), h4 = hash1(bh * 37.1 + 3.);
+          float wY = clamp(yel * 1.3, 0., 1.), wL = clamp(band * .95 + ringL * .8 + hz * .35, 0., 1.);
+          vec3 sc;
+          if (h4 < wY) sc = pick4(vec3(.95, .86, .42), vec3(.93, .92, .62), vec3(.82, .88, .58), vec3(.98, .95, .75), h3);
+          else if (h4 < wY + (1. - wY) * wL) sc = pick4(vec3(.62, .76, .88), vec3(.8, .88, .88), vec3(.88, .92, .78), vec3(.55, .7, .86), h3);
+          else if (h4 < .6) sc = pick4(vec3(.25, .43, .72), vec3(.3, .5, .78), vec3(.22, .39, .68), vec3(.36, .56, .8), h3);
+          else sc = pick4(vec3(.1, .2, .48), vec3(.13, .25, .57), vec3(.17, .33, .64), vec3(.08, .16, .4), h3);
+          float rib = .9 + .12 * sin(bacr * 7. + bh.x * 30.);
+          float edge = mix(1., .76, smoothstep(.55, 1., bdist));
+          col = Lin(sc) * rib * edge * (1. - .07 * bacr);
+        }
+      }
+      col += Lin(vec3(1., .93, .6)) * yel * yel * .18;
+      gl_FragColor = vec4(col, 1.);
+    }`
+}));
+dome.renderOrder = -2;
+sceneB.add(dome);
+
+/* ---- painted sprites: stars, moon, glow ---- */
+function starSprite() {
+  const p = new Painter(256, 256, null), c = 128;
+  for (let k = 0; k < 6; k++) { const r = 44 + k * 14;
+    for (let n = 0; n < 16; n++) { const a = R(0, 6.283);
+      p.arcStroke(c, c, r + R(-3, 3), a, a + R(.4, 1.0), R(6, 10), jit(pick(k % 2 ? ['#cfe0c8', '#b9d3c8', '#9fc0cf'] : ['#e9e08a', '#f1eab0', '#dfe49a']), 10), .8, 1 - k * .14); } }
+  p.disc(c, c, 38, '#f0d457');
+  for (let n = 0; n < 40; n++) { const a = R(0, 6.283); p.arcStroke(c, c, R(10, 34), a, a + R(.6, 1.6), R(5, 9), jit(pick(['#f3dc63', '#f6e27e', '#e9c94a', '#fbeea8']), 8)); }
+  p.disc(c, c, 11, '#fff8d8');
+  return p.textures().map;
+}
+function moonSprite() {
+  const p = new Painter(512, 512, null), c = 256;
+  for (let k = 0; k < 7; k++) { const r = 150 + k * 15;
+    for (let n = 0; n < 26; n++) { const a = R(0, 6.283);
+      p.arcStroke(c, c, r + R(-4, 4), a, a + R(.3, .8), R(9, 14), jit(pick(['#e7e08a', '#cfd77a', '#f1eba6', '#b9c873', '#dfe39a']), 10), .8, 1 - k * .12); } }
+  p.disc(c, c, 148, '#f2ecb4');
+  for (let n = 0; n < 90; n++) { const a = R(0, 6.283); p.arcStroke(c, c, R(110, 146), a, a + R(.3, .9), R(8, 13), jit(pick(['#f4eeb8', '#e9e6a4', '#f7f1c8', '#dfe29a']), 8)); }
+  p.disc(c, c, 106, '#eeb52e');
+  for (let n = 0; n < 60; n++) { const a = R(0, 6.283); p.arcStroke(c, c, R(60, 104), a, a + R(.4, 1.2), R(10, 16), jit(pick(['#f2c23a', '#eab12a', '#f5cf4c', '#e39e22']), 8)); }
+  p.disc(c - 40, c - 32, 94, '#f3edb4');
+  for (let n = 0; n < 50; n++) { const a = R(0, 6.283); p.arcStroke(c - 40, c - 32, R(20, 90), a, a + R(.4, 1.2), R(8, 14), jit(pick(['#f4eeb8', '#f7f2cc', '#ebe7a8']), 8)); }
+  p.arcStroke(c, c, 104, -.55, 2.45, 7, '#d8891c');
+  return p.textures().map;
+}
+function glowTexture() {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d');
+  const g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,246,200,1)'); g.addColorStop(.25, 'rgba(255,236,170,.45)'); g.addColorStop(.6, 'rgba(220,230,170,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const STAR_TEX = starSprite(), MOON_TEX = moonSprite(), GLOW_TEX = glowTexture();
+const glows = [];
+function spriteAt(parent, tex, pos, size, opts = {}) {
+  const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false,
+    blending: opts.add ? THREE.AdditiveBlending : THREE.NormalBlending, color: opts.color || '#ffffff', opacity: opts.opacity ?? 1 }));
+  m.position.copy(pos); m.scale.setScalar(size); parent.add(m);
+  if (opts.add) glows.push({ m, base: opts.opacity ?? 1, size, ph: R(0, 6.28) });
+  return m;
+}
+// the far sky (moon + painted stars) is infinitely distant: it travels with the camera
+const skyGroup = new THREE.Group(); sceneB.add(skyGroup);
+{ const RS = 520;
+  for (const v of SKY_VORT) { if (v[4] < .5) continue;
+    const d = skyDir(v[0], v[1]).multiplyScalar(RS), ang = v[2];
+    if (v[4] > 1.5) { spriteAt(skyGroup, GLOW_TEX, d, RS * ang * 6, { add: true, opacity: .7 }); spriteAt(skyGroup, MOON_TEX, d, RS * ang * 2.5, { color: '#ffffff' }); }
+    else { spriteAt(skyGroup, GLOW_TEX, d, RS * ang * 5, { add: true, opacity: .55 }); spriteAt(skyGroup, STAR_TEX, d, RS * ang * 2.1); }
+  } }
+
+/* ---- instanced brush dabs: the 3D swirling nebula, star halos, trees ---- */
+const DAB_TEX = (() => {
+  const cv = document.createElement('canvas'); cv.width = 128; cv.height = 32; const x = cv.getContext('2d');
+  x.lineCap = 'round';
+  for (let b = 0; b < 10; b++) { const y = 4 + b * 2.6, v = c255(R(150, 255)), e = Math.abs(b - 4.5) / 4.5;   // bristles shorter at the edges
+    x.strokeStyle = `rgb(${v},${v},${v})`; x.lineWidth = R(2.5, 4.2);
+    x.beginPath(); x.moveTo(R(4, 14) + e * e * R(18, 34), y + R(-.6, .6)); x.quadraticCurveTo(64, y + R(-1.5, 1.5), R(112, 124) - e * e * R(18, 34), y + R(-.6, .6)); x.stroke(); }
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = ANISO; return t;
+})();
+function dabMesh(list, bright = 1) {
+  const base = new THREE.PlaneGeometry(1, 1), g = new THREE.InstancedBufferGeometry();
+  g.index = base.index; g.setAttribute('position', base.attributes.position); g.setAttribute('uv', base.attributes.uv);
+  const n = list.length, A = k => new Float32Array(n * k);
+  const iP = A(3), iT = A(3), iC = A(3), iN = A(3), iW = A(1), iS = A(2), iCol = A(3);
+  list.forEach((d, i) => {
+    iP.set([d.p.x, d.p.y, d.p.z], i * 3); iT.set([d.t.x, d.t.y, d.t.z], i * 3);
+    const c = d.c || d.p, nn = d.n || UP; iC.set([c.x, c.y, c.z], i * 3); iN.set([nn.x, nn.y, nn.z], i * 3);
+    iW[i] = d.w || 0; iS.set([d.len, d.wid], i * 2); iCol.set(d.col, i * 3);
+  });
+  for (const [k, a, s] of [['iP', iP, 3], ['iT', iT, 3], ['iC', iC, 3], ['iN', iN, 3], ['iW', iW, 1], ['iS', iS, 2], ['iCol', iCol, 3]])
+    g.setAttribute(k, new THREE.InstancedBufferAttribute(a, s));
+  g.instanceCount = n;
+  const m = new THREE.Mesh(g, new THREE.ShaderMaterial({
+    side: THREE.DoubleSide,
+    uniforms: { uTime: U_TIME, uMap: { value: DAB_TEX }, uFog: { value: FOG_B }, uNear: { value: sceneB.fog.near }, uFar: { value: sceneB.fog.far }, uBright: { value: bright } },
+    vertexShader: `
+      attribute vec3 iP, iT, iC, iN, iCol; attribute float iW; attribute vec2 iS;
+      uniform float uTime; varying vec2 vUv; varying vec3 vCol; varying float vDepth, vCam;
+      vec3 rot(vec3 v, vec3 k, float a){ return v * cos(a) + cross(k, v) * sin(a) + k * dot(k, v) * (1. - cos(a)); }
+      void main(){
+        float a = iW * uTime;
+        vec3 P = iC + rot(iP - iC, iN, a), T = normalize(rot(iT, iN, a));
+        vec3 S = normalize(cross(T, normalize(cameraPosition - P)));
+        vec3 wp = P + T * position.x * iS.x + S * position.y * iS.y;
+        vec4 mv = viewMatrix * vec4(wp, 1.);
+        vUv = uv; vCol = iCol; vDepth = -mv.z; vCam = distance(cameraPosition, P);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform sampler2D uMap; uniform vec3 uFog; uniform float uNear, uFar, uBright;
+      varying vec2 vUv; varying vec3 vCol; varying float vDepth, vCam;
+      void main(){
+        float t = texture2D(uMap, vUv).r;
+        if (t < .45 || vCam < 2.2) discard;
+        vec3 c = pow(vCol, vec3(2.2)) * (.7 + .5 * t) * uBright;
+        c = mix(c, uFog, smoothstep(uNear, uFar, vDepth));
+        gl_FragColor = vec4(c, 1.);
+      }`
+  }));
+  m.frustumCulled = false;
+  return m;
+}
+// keep static dabs out of the moth's flight tube and the camera's path
+const tubePts = [];
+for (let s = sFade0; s <= PATH_LEN + 4; s += .5) tubePts.push([frameAt(s).p, 1.7], [followCam(s), 1.1]);
+const clearOfFlight = p => { for (const [q, r] of tubePts) if (p.distanceToSquared(q) < r * r) return false; return true; };
+function basisOf(n) { const u = V().crossVectors(n, Math.abs(n.y) < .9 ? UP : V(1, 0, 0)).normalize(); return [u, V().crossVectors(n, u)]; }
+
+// a 3D vortex of dabs (spiral arms + concentric rings), turning slowly
+function vortex(C, N, r0, r1, count, palIn, palOut, spin) {
+  const [U, W] = basisOf(N), out = [];
+  for (let k = 0; k < count; k++) {
+    const r = r0 + (r1 - r0) * Math.pow(rng(), .85), ringy = rng() < .5;
+    const a0 = ringy ? R(0, 6.283) : (k % 3) * 2.094 + 1.7 * Math.log(r / r0) + R(-.35, .35);
+    const h = R(-1, 1) * (.35 + .07 * r);
+    const p = C.clone().addScaledVector(U, r * Math.cos(a0)).addScaledVector(W, r * Math.sin(a0)).addScaledVector(N, h);
+    const t = U.clone().multiplyScalar(-Math.sin(a0)).addScaledVector(W, Math.cos(a0)).addScaledVector(U, -.18 * Math.cos(a0)).addScaledVector(W, -.18 * Math.sin(a0)).normalize();
+    const f = (r - r0) / (r1 - r0), len = .45 + .055 * r;
+    // alternating light and deep-blue rings, lighter towards the eye — as in the painting's great swirl
+    const pal = rng() < .12 + .32 * (1 - f) + .42 * smooth(-.2, .5, Math.sin(r * 1.5 + a0 * .3)) ? palIn : palOut;
+    out.push({ p, t, c: C, n: N, w: spin * Math.pow(r0 / r, .6), len, wid: len * R(.2, .27), col: rgb01(pick(pal), .04) });
+  }
+  return out;
+}
+const SW_LIGHT = ['#cfe0e8', '#a9c6dc', '#e9efd8', '#bcd6e0', '#dfe8d4', '#9fc0da', '#f0eec4'];
+const SW_DEEP = ['#2d55a5', '#1f3f8a', '#3a64b0', '#5b8cc8', '#26489a', '#4a7cc0', '#183275'];
+const dabs = [];
+{ // the great swirl — the moth flies straight through its eye
+  const f = frameAt(sB0 + 40);
+  dabs.push(...vortex(f.p, f.T.clone().negate(), 3.2, 16, 3200, SW_LIGHT, SW_DEEP, .11));
+}
+{ const f = frameAt(sB0 + 88), C = f.p.clone().addScaledVector(f.Lat, 13).addScaledVector(UP, 4);
+  dabs.push(...vortex(C, f.T.clone().negate().applyAxisAngle(UP, .5).normalize(), 1.5, 9, 1700, SW_LIGHT, SW_DEEP, -.14)); }
+{ const f = frameAt(sB0 + 62), C = f.p.clone().addScaledVector(f.Lat, -16).addScaledVector(UP, 8);
+  dabs.push(...vortex(C, f.T.clone().negate().applyAxisAngle(UP, -.6).normalize(), 1.2, 7, 1000, SW_LIGHT, SW_DEEP, .16)); }
+{ // the luminous serpentine band the moth weaves in and out of
+  const BAND = ['#d8e6d0', '#bcd6dc', '#9fc0da', '#e8ecc4', '#cfe0e8', '#7fa6d0', '#f0eec4', '#aac8dc'];
+  for (let s = sB0 + 2; s < PATH_LEN + 10; s += .07) {
+    const f = frameAt(s), s2 = frameAt(s + .5);
+    const off = (x) => x.p.clone().addScaledVector(x.Lat, 5.5 * Math.sin(x === f ? s * .075 : (s + .5) * .075)).addScaledVector(UP, -2.5 + 4 * Math.sin((x === f ? s : s + .5) * .052 + 1));
+    const c0 = off(f), c1 = off(s2), t = c1.clone().sub(c0).normalize();
+    const side = V().crossVectors(t, UP).normalize(), up2 = V().crossVectors(side, t);
+    const u = R(-1, 1), p = c0.addScaledVector(side, u * 2.4).addScaledVector(up2, R(-.5, .5) * (1 - u * u));
+    if (!clearOfFlight(p)) continue;
+    dabs.push({ p, t: t.clone().addScaledVector(side, R(-.15, .15)).normalize(), len: R(.55, 1.05), wid: R(.13, .22), col: rgb01(pick(BAND), .04) });
+  }
+}
+// stars near the flight: painted core, glow, and turning halos of dabs
+const NEAR_STARS = [[10, -6, 4.5, 1.6], [58, 6, 5, 2.0], [76, -7, -1.5, 1.5], [100, 5, 6, 2.2], [24, 8, 9, 1.3]];
+for (const [ds, lat, up, size] of NEAR_STARS) {
+  const f = frameAt(sB0 + ds), C = f.p.clone().addScaledVector(f.Lat, lat).addScaledVector(UP, up);
+  spriteAt(sceneB, GLOW_TEX, C, size * 9, { add: true, opacity: .75 });
+  spriteAt(sceneB, STAR_TEX, C, size * 2.3);
+  dabs.push(...vortex(C, f.Th.clone().negate(), size * 1.05, size * 2.8, 340, ['#e9e08a', '#f1eab0', '#cfdc9a', '#fff4c0', '#dfe49a'], ['#b9d3c8', '#9fc0da', '#cfe0c8', '#e9e08a'], .22));
+}
+
+/* ---- hills, village, cypress — far below and ahead ---- */
+function hillTexture(dark) {
+  const W = 1024, H = 256, p = new Painter(W, H, dark ? '#1d3570' : '#2a4c8a');
+  const pal = dark ? ['#16295a', '#1f3a78', '#2a4a8a', '#3a5c9c', '#24407e'] : ['#2a4c8a', '#3a62a6', '#24407a', '#4a72b4', '#5d82bd', '#30569a'];
+  for (let i = 0; i < 1800; i++) { const x = R(-20, W + 20); p.sweep(x, R(0, H), R(-.2, .2) + Math.sin(x * .02) * .25, R(30, 80), R(-.25, .25), R(6, 12), jit(pick(pal), 10), R(.5, .9)); }
+  for (let i = 0; i < 260; i++) p.sweep(R(0, W), R(10, H), R(-.25, .25), R(30, 70), R(-.2, .2), R(4, 7), jit(pick(['#7ea0cf', '#9bb6d8', '#6d8fc4']), 8), 1);
+  for (let x = -20; x < W + 20; x += R(30, 50)) p.sweep(x, R(3, 8), R(-.1, .1), R(45, 80), 0, R(9, 14), jit('#101f48', 6), 1);
+  return p.textures(true);
+}
+const O_HILL = V(fB0.p.x, YG - 10, fB0.p.z);
+function ridge(Rr, top, phi0, phi1, tex, rep) {
+  const NU = 180, NVr = 6, pos = [], uv = [], idx = [];
+  for (let i = 0; i <= NU; i++) { const ph = phi0 + (phi1 - phi0) * i / NU, yt = top(ph);
+    for (let j = 0; j <= NVr; j++) { const v = j / NVr, rr = Rr - Math.sin(Math.PI * v) * Rr * .035;
+      pos.push(O_HILL.x + rr * Math.sin(ph), O_HILL.y + (yt - O_HILL.y) * v, O_HILL.z - rr * Math.cos(ph)); uv.push(i / NU * rep, v); } }
+  for (let i = 0; i < NU; i++) for (let j = 0; j < NVr; j++) { const a = i * (NVr + 1) + j, b = a + NVr + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx); g.computeVertexNormals();
+  sceneB.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: tex.map, bumpMap: tex.bump, bumpScale: 3, side: THREE.DoubleSide })));
+}
+{ const hl = hillTexture(false), hd = hillTexture(true);
+  ridge(500, ph => YG + 44 + 14 * Math.sin(ph * 1.7 + .4) + 6 * Math.sin(ph * 4.1), -1.4, 1.4, hl, 10);
+  ridge(430, ph => YG + 34 + 12 * Math.sin(ph * 2.3 + 2) + 7 * Math.sin(ph * 5.1), -1.4, 1.4, hl, 9);
+  ridge(445, ph => YG + 30 + 48 * Math.exp(-Math.pow((ph - .42) / .16, 2)) + 4 * Math.sin(ph * 9), .1, .85, hd, 3);   // the dark hill on the right
+  ridge(360, ph => YG + 22 + 9 * Math.sin(ph * 3 + 1) + 5 * Math.sin(ph * 7), -1.4, 1.4, hl, 8);
+  // nearer rolling hills on both sides frame the valley where the village lies
+  for (const [Rr, h, a0, a1] of [[235, 24, -1.45, -.32], [235, 22, .3, 1.45], [175, 17, -1.45, -.42], [175, 15, .4, 1.45]])
+    ridge(Rr, ph => YG + 1 + (h + 6 * Math.sin(ph * 6 + Rr) + 4 * Math.sin(ph * 13)) * smooth(0, .3, Math.min(Math.abs(ph - a0), Math.abs(ph - a1))), a0, a1, hl, 4); }
+{ const g = groundTexture('#26405c', ['#26405c', '#2f5068', '#3b6274', '#1f3650', '#355a7a', '#4a6f8a'], ['#6f94b0', '#5d88a0', '#8fb0c4', '#16283c'], 2600);
+  for (const t of [g.map, g.bump]) t.repeat.set(40, 40);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), new THREE.MeshLambertMaterial({ map: g.map, bumpMap: g.bump, bumpScale: 2 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(fB0.p.x, YG, fB0.p.z - 300); sceneB.add(ground); }
+await tick();
+
+// the village with its church spire and lit windows
+{
+  const VC = V(fB0.p.x + 10, YG, fB0.p.z - 275);
+  const wallT = (() => { const p = new Painter(256, 256, '#8aa3bb');
+    for (let i = 0; i < 320; i++) p.sweep(R(0, 256), R(0, 256), -Math.PI / 2 + R(-.3, .3), R(30, 70), R(-.2, .2), R(8, 14), jit(pick(['#8ea7bd', '#7690ab', '#a3b8c9', '#6d86a2', '#98aec2', '#5f7a9a']), 10), R(.5, .9));
+    for (const [x, y, a] of [[0, 0, 0], [0, 256, 0], [0, 0, Math.PI / 2], [256, 0, Math.PI / 2]])
+      for (let k = 0; k < 6; k++) p.sweep(x + (a ? R(-3, 3) : k * 46), y + (a ? k * 46 : R(-3, 3)), a, 56, 0, R(12, 16), jit('#1a2742', 6), 1);
+    return p.textures(); })();
+  const roofT = ['#b5633e', '#7d4a3a', '#4f6f8f', '#6b5a4a'].map(b => { const p = new Painter(256, 256, b);
+    for (let i = 0; i < 260; i++) p.sweep(R(0, 256), R(0, 256), R(-.4, .4), R(30, 70), R(-.2, .2), R(8, 14), jit(b, 22), R(.5, .9));
+    for (let k = 0; k < 7; k++) p.sweep(k * 40, R(250, 254), 0, 50, 0, 12, jit('#1a2238', 6), 1);
+    const t = p.textures(true); return t; });
+  const walls = [], roofs = roofT.map(() => []), wins = [], spires = [], winPts = [];
+  const prismRoof = (w, rh, d) => { const sh = new THREE.Shape(); sh.moveTo(-w / 2 - .5, 0); sh.lineTo(w / 2 + .5, 0); sh.lineTo(0, rh); sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth: d + 1, bevelEnabled: false }); g.translate(0, 0, -(d + 1) / 2);
+    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * .12, uv.getY(i) * .12); return g; };
+  function house(x, z, w, h, d, rot, nw = 3) {
+    const m = new THREE.Matrix4().compose(V(x, YG, z), new THREE.Quaternion().setFromAxisAngle(UP, rot), V(1, 1, 1));
+    walls.push(new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0).applyMatrix4(m));
+    roofs[(rng() * roofs.length) | 0].push(prismRoof(w, R(.35, .55) * w, d).translate(0, h, 0).applyMatrix4(m));
+    for (let k = 0; k < nw; k++) { if (rng() < .3) continue;
+      const wp = V(R(-w / 2 + 1.2, w / 2 - 1.2), R(1.4, h - 1.3), d / 2 + .06);
+      wins.push(new THREE.PlaneGeometry(1.3, 1.8).translate(wp.x, wp.y, wp.z).applyMatrix4(m));
+      winPts.push(wp.applyMatrix4(m)); }
+  }
+  // church: nave, tower and the tall spire
+  { const cx = VC.x - 16, cz = VC.z + 10, m = new THREE.Matrix4().makeTranslation(cx, YG, cz);
+    walls.push(new THREE.BoxGeometry(10, 10, 22).translate(0, 5, 0).applyMatrix4(m));
+    roofs[2].push(prismRoof(10, 6, 22).translate(0, 10, 0).applyMatrix4(m));
+    walls.push(new THREE.BoxGeometry(5.5, 15, 5.5).translate(0, 7.5, 13).applyMatrix4(m));
+    spires.push(new THREE.ConeGeometry(3, 34, 6).translate(0, 15 + 17, 13).applyMatrix4(m));
+    for (const [x, y] of [[-2.5, 4], [2.5, 4], [0, 10]]) { const wp = V(x, y, 11.06).applyMatrix4(m);
+      wins.push(new THREE.PlaneGeometry(1.4, 2.4).translate(x, y, 11.06).applyMatrix4(m)); winPts.push(wp); } }
+  for (let i = 0; i < 64; i++) {
+    let x, z; do { x = R(-105, 105); z = R(-55, 55); } while ((x / 105) ** 2 + (z / 55) ** 2 > 1 || (Math.abs(x + 16) < 12 && Math.abs(z - 14) < 22));
+    const w = R(7, 12);
+    house(VC.x + x, VC.z + z, w, R(4.5, 7.5), R(6, 10), R(-.35, .35), w > 10 ? 4 : 3);
+  }
+  const wallMat = new THREE.MeshLambertMaterial({ map: wallT.map, bumpMap: wallT.bump, bumpScale: 2 });
+  sceneB.add(new THREE.Mesh(mergeGeometries(walls), wallMat));
+  roofs.forEach((list, i) => list.length && sceneB.add(new THREE.Mesh(mergeGeometries(list), new THREE.MeshLambertMaterial({ map: roofT[i].map, bumpMap: roofT[i].bump, bumpScale: 2 }))));
+  sceneB.add(new THREE.Mesh(mergeGeometries(spires), new THREE.MeshLambertMaterial({ map: roofT[2].map, color: '#9db4d0' })));
+  sceneB.add(new THREE.Mesh(mergeGeometries(wins), new THREE.MeshBasicMaterial({ color: '#ffd84a', fog: false })));
+  for (const p of winPts) spriteAt(sceneB, GLOW_TEX, p.clone().add(V(0, 0, .5)), 6, { add: true, opacity: .45 });
+
+  // curling teal trees in the village and rolling over the right-hand hills
+  const TREE = ['#2f6a6e', '#3f7f7a', '#4f8f86', '#6aa39a', '#24545e', '#7fb0a6', '#1f4a5a'];
+  const clump = (C, r, n) => { for (let k = 0; k < n; k++) {
+    const a = R(0, 6.283), e = R(-.2, 1), rr = r * Math.sqrt(1 - e * e * .6);
+    const p = C.clone().add(V(Math.cos(a) * rr, e * r * .8, Math.sin(a) * rr));
+    dabs.push({ p, t: V(-Math.sin(a), R(-.3, .3), Math.cos(a)).normalize(), len: R(1.6, 2.8), wid: R(.4, .6), col: rgb01(pick(TREE), .04) }); } };
+  for (let i = 0; i < 30; i++) { const r = R(3.5, 7); clump(VC.clone().add(V(R(-110, 110), r * .5, R(-60, 60))), r, 140); }
+  for (let i = 0; i < 16; i++) { const r = R(9, 16); clump(VC.clone().add(V(R(70, 160), r * .4 + R(0, 8), R(-90, 20))), r, 380); }
+  // trees rolling over the nearer hills
+  for (let i = 0; i < 34; i++) { const Rr = pick([175, 235]), ph = (rng() < .5 ? -1 : 1) * R(.5, 1.35), r = R(5, 10);
+    clump(V(O_HILL.x + (Rr - 6) * Math.sin(ph), YG + R(8, 16), O_HILL.z - (Rr - 6) * Math.cos(ph)), r, 260); }
+}
+// the cypress — dark green flames rising past the flight
+{
+  const f = frameAt(sB0 + 22), base = f.p.clone().addScaledVector(f.Lat, -10); base.y = YG;
+  const TOP = f.p.y + 14, Hh = TOP - YG;
+  const cyp = (() => { const p = new Painter(256, 1024, '#244f30');
+    for (let i = 0; i < 800; i++) p.sweep(R(0, 256), R(0, 1024), -Math.PI / 2 + R(-.25, .25), R(50, 140), R(-.2, .2), R(8, 16), jit(pick(['#2a5a34', '#3a6e3c', '#1f4a2e', '#4f8448', '#2f6640', '#5f9050', '#356a3a']), 12), R(.5, .9));
+    for (let i = 0; i < 110; i++) p.sweep(R(0, 256), R(0, 1024), -Math.PI / 2 + R(-.2, .2), R(90, 220), R(-.15, .15), R(5, 9), jit(pick(['#8a4f26', '#9a5a2c', '#6e3c1c']), 8), 1);
+    return p.textures(true); })();
+  cyp.map.repeat.set(1, 2); cyp.bump.repeat.set(1, 2);
+  const mat = new THREE.MeshLambertMaterial({ map: cyp.map, bumpMap: cyp.bump, bumpScale: 3, emissive: '#ffffff', emissiveMap: cyp.map, emissiveIntensity: .25 });
+  const strands = [];
+  const prof = y => 7 * Math.pow(clamp(1 - (y - YG) / Hh, 0, 1), .8) * smooth(-.1, .25, (y - YG) / Hh);
+  for (let k = 0; k < 34; k++) {      // flame tongues, licking upward and outward
+    const main = k < 2, y0 = main ? YG : YG + R(0, Hh * .6), y1 = main ? TOP - k * 6 : Math.min(TOP - R(3, 18), y0 + R(Hh * .2, Hh * .6));
+    const th0 = R(0, 6.283), rho0 = main ? .5 : prof(y0) * R(.35, 1), ph = R(0, 6.28), pts = [], flick = R(.8, 2.2);
+    for (let i = 0; i <= 10; i++) { const v = i / 10, y = y0 + (y1 - y0) * v;
+      const rho = rho0 * (1 - v * .55) + flick * Math.sin(v * 4.5 + ph) * v + (main ? 0 : 1.6 * v * v);
+      const th = th0 + .7 * Math.sin(v * 3.4 + ph);
+      pts.push(V(base.x + rho * Math.cos(th), y, base.z + rho * Math.sin(th))); }
+    const c = new THREE.CatmullRomCurve3(pts), SEG = 48, RAD = 8;
+    const g = new THREE.TubeGeometry(c, SEG, 1, RAD, false), pa = g.attributes.position, r0 = main ? 3.4 : R(1.1, 2.4);
+    for (let i = 0; i <= SEG; i++) { const ctr = c.getPointAt(i / SEG), rr = r0 * Math.pow(1 - i / SEG, .85) + .06;
+      for (let j = 0; j <= RAD; j++) { const ix = i * (RAD + 1) + j; const v = V().fromBufferAttribute(pa, ix).sub(ctr).multiplyScalar(rr).add(ctr); pa.setXYZ(ix, v.x, v.y, v.z); } }
+    g.computeVertexNormals(); strands.push(g);
+  }
+  sceneB.add(new THREE.Mesh(mergeGeometries(strands), mat));
+}
+sceneB.add(dabMesh(dabs));
+await tick();
+
+/* ======================================================================
+ *  THE EMPEROR MOTH — built from the painting itself
+ * ====================================================================== */
+const mothImg = new Image(); mothImg.src = MOTH_SRC; await mothImg.decode();
+const IW = mothImg.width, IH = mothImg.height;
+// cut-out geometry (pixels): body axis tail→head, wing axis left tip→right tip
+const IC = [415, 185], IA = [0.946, 0.322], IH_ = [0.316, -0.949], IK = 763 / 1.7;
+const toUV = (x, z) => [(IC[0] + (-x * IA[0] + z * IH_[0]) * IK) / IW, 1 - (IC[1] + (-x * IA[1] + z * IH_[1]) * IK) / IH];
+const toLocal = (px, py) => { const p0 = (px - IC[0]) / IK, p1 = (py - IC[1]) / IK; return [-(p0 * IA[0] + p1 * IA[1]), p0 * IH_[0] + p1 * IH_[1]]; };
+const mothMat = (() => {
+  const cv = document.createElement('canvas'); cv.width = IW; cv.height = IH; const x = cv.getContext('2d');
+  x.drawImage(mothImg, 0, 0); const img = x.getImageData(0, 0, IW, IH), d = img.data, n = IW * IH;
+  // colour: the scan is a little faded — lift saturation so the turquoise and ultramarine read as in the painting
+  const cc = document.createElement('canvas'); cc.width = IW; cc.height = IH; const cx = cc.getContext('2d');
+  const ci = cx.createImageData(IW, IH), cd = ci.data;
+  for (let i = 0; i < n * 4; i += 4) {
+    const l = d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11;
+    for (let k = 0; k < 3; k++) cd[i + k] = c255((l + (d[i + k] - l) * 1.25 - 128) * 1.06 + 128 + (k === 2 ? 4 : 0));
+    cd[i + 3] = d[i + 3];
+  }
+  cx.putImageData(ci, 0, 0);
+  const map = new THREE.CanvasTexture(cc); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = ANISO;
+  // impasto relief: local contrast of the paint becomes height
+  const lum = new Float32Array(n), tmp = new Float32Array(n), blur = new Float32Array(n), RB = 4;
+  for (let i = 0; i < n; i++) lum[i] = (d[i * 4] * .3 + d[i * 4 + 1] * .59 + d[i * 4 + 2] * .11) / 255;
+  for (let y = 0; y < IH; y++) { let acc = 0; for (let xx = -RB; xx <= RB; xx++) acc += lum[y * IW + clamp(xx, 0, IW - 1)];
+    for (let xx = 0; xx < IW; xx++) { tmp[y * IW + xx] = acc / (2 * RB + 1); acc += lum[y * IW + Math.min(xx + RB + 1, IW - 1)] - lum[y * IW + Math.max(xx - RB, 0)]; } }
+  for (let xx = 0; xx < IW; xx++) { let acc = 0; for (let y = -RB; y <= RB; y++) acc += tmp[clamp(y, 0, IH - 1) * IW + xx];
+    for (let y = 0; y < IH; y++) { blur[y * IW + xx] = acc / (2 * RB + 1); acc += tmp[Math.min(y + RB + 1, IH - 1) * IW + xx] - tmp[Math.max(y - RB, 0) * IW + xx]; } }
+  for (let i = 0; i < n; i++) { const h = c255((.5 + 2.2 * (lum[i] - blur[i]) + .25 * (lum[i] - .5)) * 255); d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = h; d[i * 4 + 3] = 255; }
+  x.putImageData(img, 0, 0);
+  const bump = new THREE.CanvasTexture(cv);
+  // one material per world, so each keeps its own lights and fog
+  const mk = e => new THREE.MeshLambertMaterial({ map, bumpMap: bump, bumpScale: 2.4, alphaTest: .5, side: THREE.DoubleSide,
+    emissive: '#ffffff', emissiveMap: map, emissiveIntensity: e });
+  const B = mk(.2); B.color.setRGB(.86, 1, 1.18); B.emissive.setRGB(.86, 1, 1.18);   // moonlit: a cooler cast at night
+  return { A: mk(.06), B };
+})();
+const moth = (() => {
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  const cs = [[12, 12], [775, 12], [12, 433], [775, 433]].map(([a, b]) => toLocal(a, b));
+  const X0 = Math.min(...cs.map(c => c[0])), X1 = Math.max(...cs.map(c => c[0])), Z0 = Math.min(...cs.map(c => c[1])), Z1 = Math.max(...cs.map(c => c[1]));
+  const NX = 130, NZ = 76, HINGE = .07, pos = [], uv = [], idx = [], bx = [], bz = [], by = [];
+  for (let j = 0; j <= NZ; j++) for (let i = 0; i <= NX; i++) {
+    const x = X0 + (X1 - X0) * i / NX, z = Z0 + (Z1 - Z0) * j / NZ;
+    const y = .028 * Math.sin(Math.PI * clamp(Math.abs(x) / .9, 0, 1));          // a slight camber
+    pos.push(x, y, z); bx.push(x); by.push(y); bz.push(z); uv.push(...toUV(x, z));
+  }
+  for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) { const a = j * (NX + 1) + i, b = a + 1, c = a + NX + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals();
+  const meshes = [new THREE.Mesh(geo, mothMat.A)];
+  // thorax and abdomen: real volume, painted by projecting the same cut-out from above
+  for (const [px, py, rx, ry, rz, lift] of [[432, 145, .088, .075, .084, .035], [395, 225, .066, .055, .085, .012]]) {
+    const [cx, cz] = toLocal(px, py), g = new THREE.SphereGeometry(1, 32, 20);
+    g.scale(rx, ry, rz); g.translate(cx, lift, cz);
+    const pa = g.attributes.position, guv = g.attributes.uv;
+    for (let i = 0; i < pa.count; i++) guv.setXY(i, ...toUV(pa.getX(i), pa.getZ(i)));
+    meshes.push(new THREE.Mesh(g, mothMat.A));
+  }
+  body.add(...meshes);
+  sceneA.add(root);
+  const enter = (scene, mat) => { scene.add(root); for (const m of meshes) m.material = mat; };
+  const pa = geo.attributes.position, rowA = new Float32Array(NZ + 1);
+  function flap(base, amp, phase) {
+    // the wings rest longer near the level (pattern shown), the upstroke is quicker; the trailing edge lags a little
+    for (let j = 0; j <= NZ; j++) { const w = .5 + .5 * Math.sin(phase - .6 * (NZ - j) / NZ); rowA[j] = base + amp * (1.8 * Math.pow(w, 1.5) - .8); }
+    for (let j = 0, k = 0; j <= NZ; j++) for (let i = 0; i <= NX; i++, k++) {
+      const x = bx[k], ax = Math.abs(x);
+      if (ax <= HINGE) { pa.setXYZ(k, x, by[k], bz[k]); continue; }
+      const d = ax - HINGE, th = rowA[j] * (1 + .3 * d), s = Math.sign(x);
+      pa.setXYZ(k, s * (HINGE + d * Math.cos(th)), by[k] + d * Math.sin(th), bz[k]);
+    }
+    pa.needsUpdate = true; geo.computeVertexNormals();
+  }
+  return { root, body, flap, enter };
+})();
+const qRest = (() => {
+  const y = restN.clone(), z = restT.clone().addScaledVector(restN, -restT.dot(restN)).normalize();
+  z.lerp(V(.62, 0, -.78).projectOnPlane(y).normalize(), .8).normalize();
+  const x = V().crossVectors(y, z);
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+})();
+
+/* ======================================================================
+ *  COMPOSITE — painterly dissolve between the two worlds, oil-paint filter,
+ *  linen canvas weave, soft vignette
+ * ====================================================================== */
+const MASK_TEX = (() => { const p = new Painter(512, 512, '#808080');
+  for (let i = 0; i < 900; i++) { const g = c255(R(0, 255)); p.sweep(R(-20, 532), R(-20, 532), R(-.6, .6) + (rng() < .5 ? 0 : Math.PI / 2), R(40, 120), R(-.3, .3), R(14, 30), `rgb(${g},${g},${g})`, .5); }
+  const t = new THREE.CanvasTexture(p.c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
+const mkRT = () => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const rtA = mkRT(), rtB = mkRT();
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const post = new THREE.ShaderMaterial({
+  uniforms: { tA: { value: rtA.texture }, tB: { value: rtB.texture }, tMask: { value: MASK_TEX }, uFade: { value: 0 },
+    uRes: { value: new THREE.Vector2(1, 1) }, uSpread: { value: 1.25 }, uStrength: { value: .55 }, uPx: { value: 1 }, uAspect: { value: 16 / 9 } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`,
+  fragmentShader: `
+    uniform sampler2D tA, tB, tMask; uniform float uFade, uSpread, uStrength, uPx, uAspect; uniform vec2 uRes; varying vec2 vUv;
+    float gM = 0.;
+    vec3 samp(vec2 uv){
+      vec3 c;
+      if (uFade <= 0.) c = texture2D(tA, uv).rgb;
+      else if (uFade >= 1.) c = texture2D(tB, uv).rgb;
+      else c = mix(texture2D(tA, uv).rgb, texture2D(tB, uv).rgb, gM);
+      return c;
+    }
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    void main(){
+      float n = texture2D(tMask, vUv * vec2(1.2 * uAspect, 1.2)).r;
+      gM = smoothstep(0., .42, uFade * 1.75 - n * .42 - (1. - vUv.y) * .33);
+      vec2 px = uSpread / uRes;
+      vec3 m0=vec3(0.),m1=vec3(0.),m2=vec3(0.),m3=vec3(0.), s0=vec3(0.),s1=vec3(0.),s2=vec3(0.),s3=vec3(0.);
+      for (int j = -3; j <= 0; j++) for (int i = -3; i <= 0; i++) {
+        vec2 o = vec2(float(i), float(j)) * px; vec3 c;
+        c = samp(vUv + o);                 m0 += c; s0 += c*c;
+        c = samp(vUv + vec2(-o.x, o.y));   m1 += c; s1 += c*c;
+        c = samp(vUv + vec2(o.x, -o.y));   m2 += c; s2 += c*c;
+        c = samp(vUv - o);                 m3 += c; s3 += c*c;
+      }
+      m0/=16.; m1/=16.; m2/=16.; m3/=16.;
+      float v0 = dot(abs(s0/16. - m0*m0), vec3(1.)), v1 = dot(abs(s1/16. - m1*m1), vec3(1.));
+      float v2 = dot(abs(s2/16. - m2*m2), vec3(1.)), v3 = dot(abs(s3/16. - m3*m3), vec3(1.));
+      vec3 k = m0; float mv = v0;
+      if (v1 < mv) { mv = v1; k = m1; } if (v2 < mv) { mv = v2; k = m2; } if (v3 < mv) { k = m3; }
+      vec3 col = mix(samp(vUv), k, uStrength);
+      vec2 fc = gl_FragCoord.xy / uPx;
+      float weave = sin(fc.x * 1.35) * sin(fc.y * 1.35);
+      float slub = sin(fc.y * .21 + sin(fc.x * .05) * 3.) * sin(fc.x * .17);
+      col *= 1. + .035 * weave + .018 * slub + .03 * (hash(floor(fc)) - .5);
+      col = mix(vec3(dot(col, vec3(.3, .59, .11))), col, 1.06);
+      float d = length((vUv - .5) * vec2(1., .8));
+      col *= mix(1., .8, smoothstep(.38, .85, d));
+      gl_FragColor = vec4(col, 1.);
+      #include <colorspace_fragment>
+    }`,
+  depthTest: false, depthWrite: false
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
+
+function applySize() {
+  [SW, SH] = stageSize();
+  stage.style.width = SW + 'px'; stage.style.height = SH + 'px';
+  renderer.setPixelRatio(pr); renderer.setSize(SW, SH);
+  const w = Math.round(SW * pr), h = Math.round(SH * pr);
+  rtA.setSize(w, h); rtB.setSize(w, h);
+  post.uniforms.uRes.value.set(w, h); post.uniforms.uSpread.value = 1.25 * pr; post.uniforms.uPx.value = pr;
+  camera.aspect = SW / SH; camera.fov = fovFor(SW / SH); camera.updateProjectionMatrix();
+  post.uniforms.uAspect.value = SW / SH;
+}
+applySize();
+addEventListener('resize', applySize);
+
+/* ======================================================================
+ *  ANIMATION — one continuous take
+ * ====================================================================== */
+const st = { t: 0, s: 0, phase: 0, bank: 0, fade: 0, ending: false };
+function reset() { Object.assign(st, { t: 0, s: 0, phase: 0, bank: 0, fade: 0, ending: false }); }
+const tmpM = new THREE.Matrix4(), qFly = new THREE.Quaternion(), qRoll = new THREE.Quaternion(), ZAX = V(0, 0, 1);
+const camPos = V(), camTgt = V();
+
+function update(dt) {
+  const t = (st.t += dt);
+  st.s += speedAt(t, st.s) * dt;
+  const s = st.s, f = frameAt(s), fly = smooth(2.6, 5.5, t), cw = climbW(s), inB = fadeAt(s);
+  st.fade = inB;
+  U_TIME.value = t;
+
+  // position: the path plus a gentle floating drift
+  moth.root.position.copy(f.p).addScaledVector(f.Lat, .1 * Math.sin(t * .53) * fly).addScaledVector(UP, .08 * Math.sin(t * .71 + 1) * fly);
+
+  // orientation: heading along the path, mild nose-up on the climb, soft banking into turns
+  const fa = frameAt(s + 2), fb = frameAt(s - 2);
+  const turn = fa.Th.clone().sub(fb.Th).dot(f.Lat) / 4;
+  st.bank += (clamp(turn * 5, -.22, .22) - st.bank) * (1 - Math.exp(-dt * 1.6));
+  const zA = f.Th.clone().addScaledVector(UP, clamp(f.T.y / Math.max(.2, Math.hypot(f.T.x, f.T.z)), -.4, .4) * .55).normalize();
+  const xA = V().crossVectors(UP, zA).normalize(), yA = V().crossVectors(zA, xA);
+  qFly.setFromRotationMatrix(tmpM.makeBasis(xA, yA, zA)).multiply(qRoll.setFromAxisAngle(ZAX, st.bank));
+  moth.root.quaternion.copy(qRest).slerp(qFly, smooth(3.0, 7.5, t));
+
+  // wings: breathing at rest, a lift at take-off, then a steady moderate beat (a touch faster on the climb)
+  const freq = .3 + (1.25 + .35 * cw) * fly;
+  let amp = .03 + .33 * fly + .1 * (smooth(2.6, 3.6, t) - smooth(4.5, 7, t));
+  amp *= 1 - inB * (.12 + .12 * Math.sin(t * .41));                // floats a little more in the night air
+  st.phase += Math.PI * 2 * freq * dt;
+  moth.flap(.03 + .06 * fly, amp, st.phase);
+  moth.body.position.y = -.035 * Math.sin(st.phase - .9) * fly;
+  moth.body.rotation.x = .04 * Math.sin(st.phase - 1.3) * fly;
+
+  // camera: from above the resting moth (the painting's view) into a close follow behind / beside it
+  const w = camBlend(t), la = 2.5 + 1.5 * inB;
+  followCam(s, camPos);
+  const ahead = frameAt(s + la).p.lerp(moth.root.position, .45);
+  ahead.y = moth.root.position.y + (ahead.y - moth.root.position.y) * .35 - .25 + .2 * inB + .5 * smooth(sB0, sB0 + 14, s);   // on the climb, don't aim at the sky above the moth
+  camPos.lerp(OPEN_CAM, 1 - w); camTgt.copy(ahead).lerp(OPEN_TGT, 1 - w);
+  camera.position.copy(camPos).add(V(.03 * Math.sin(t * .31), .025 * Math.sin(t * .43 + 2), .02 * Math.sin(t * .27)));
+  camera.lookAt(camTgt);
+  camera.rotateZ(-.08 * (1 - w) + .016 * Math.sin(t * .21) - st.bank * .18);
+  backdropA.position.copy(camera.position); dome.position.copy(camera.position); skyGroup.position.copy(camera.position);
+
+  for (const g of glows) { const k = 1 + .06 * Math.sin(t * 1.3 + g.ph); g.m.scale.setScalar(g.size * k); g.m.material.opacity = g.base * (.85 + .15 * Math.sin(t * .9 + g.ph)); }
+
+  // end of the journey: dissolve to night blue and begin again
+  if (!st.ending && s > PATH_LEN - 7) {
+    st.ending = true; st.endAt = performance.now(); veil.style.backgroundColor = '#10204a'; veil.style.opacity = 1;
+    setTimeout(() => { startTake(); veil.style.backgroundColor = '#6f9f82'; requestAnimationFrame(() => { veil.style.opacity = 0; }); }, 2400);
+  }
+}
+
+function render() {
+  const f = st.fade;
+  if (f < 1) { moth.enter(sceneA, mothMat.A); renderer.setRenderTarget(rtA); renderer.render(sceneA, camera); }
+  if (f > 0) { moth.enter(sceneB, mothMat.B); renderer.setRenderTarget(rtB); renderer.render(sceneB, camera); }
+  post.uniforms.uFade.value = f;
+  renderer.setRenderTarget(null); renderer.render(postScene, postCam);
+}
+
+// if the GPU can't hold ~50 fps, drop resolution once — during the still opening, before the flight begins
+let last = performance.now(), perfFrames = 0, perfTime = 0, playing = false;
+renderer.setAnimationLoop(() => {
+  const now = performance.now(), raw = (now - last) / 1000, dt = Math.min(raw, 1 / 20); last = now;
+  if (!Q.get('pr') && st.t > .5 && st.t < 2.5 && pr > 1) {
+    perfFrames++; perfTime += raw;
+    if (perfFrames === 60 && perfTime / 60 > 1 / 48) { pr = Math.max(1, pr * .75); applySize(); }
+  }
+  if (!window.__hold && playing) update(dt);
+  syncMusic(now);
+  render();
+});
+// for inspection from the console: __moth.seek(40) jumps 40 s into the take
+window.__moth = { st, PATH_LEN, sB0, seek(T) { window.__hold = true; reset(); for (let k = 0; k < T * 30; k++) update(1 / 30); render(); } };
+requestAnimationFrame(() => { veil.style.opacity = 0; });
+
+/* ---------------- background music, tied to the take ----------------
+ * Each take starts the song from the beginning (fade in) and fades it out with the final dissolve,
+ * so every loop is the same self-contained clip. If the browser blocks audio autoplay, the opening
+ * frame holds and the take starts — with the music — on the first click or key press. */
+const music = Q.get('music') === '0' ? null : (() => {
+  let src = MUSIC_URL;
+  if (!src) {
+    const bin = atob(MUSIC_B64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    src = URL.createObjectURL(new Blob([u8], { type: 'audio/mpeg' }));
+  }
+  const a = new Audio(src);
+  a.preload = 'auto'; a.volume = 0;
+  return a;
+})();
+const VOL = clamp(parseFloat(Q.get('vol') || '0.85'), 0, 1);
+// the music follows the picture: it pauses when frames stop arriving and re-syncs if it drifts
+let lastFrame = 0, stalled = false;
+function syncMusic(now) {
+  lastFrame = now;
+  if (!music || !playing) return;
+  if (stalled && !document.hidden) { stalled = false; music.play().catch(() => {}); }
+  if (!music.paused && st.t < music.duration - 1 && Math.abs(music.currentTime - st.t) > .35) music.currentTime = st.t;
+  let v = VOL * smooth(0, 2.5, st.t);
+  if (st.ending) v *= 1 - clamp((now - st.endAt) / 2200, 0, 1);
+  music.volume = clamp(v, 0, 1);
+}
+if (music) music.addEventListener('timeupdate', () => {
+  if (playing && !music.paused && performance.now() - lastFrame > 300) { music.pause(); stalled = true; }
+});
+function startTake() {
+  reset();
+  if (music) { music.pause(); music.currentTime = 0; music.volume = 0; music.play().catch(() => {}); }
+}
+/* ---------------- welcome wall ----------------
+ * The wall is shown while the 3D scene is being built; "开始观看" starts the take and the music together
+ * (the click also satisfies the browser's rule that sound needs a user action). ?music=0 skips the wall. */
+const intro = document.getElementById('intro'), startBtn = document.getElementById('start');
+function drawRoute() {
+  const svg = intro.querySelector('svg.route'), box = svg.getBoundingClientRect();
+  const a = intro.querySelector('.moth img').getBoundingClientRect(), b = intro.querySelector('.starry img').getBoundingClientRect();
+  if (!a.width || !b.width) return;
+  const x0 = a.left + a.width * .5 - box.left, y0 = a.top + a.height * .6 - box.top;      // the moth's body
+  const x1 = b.left + b.width * .49 - box.left, y1 = b.top + b.height * .34 - box.top;    // the eye of the great swirl
+  const lift = Math.max(Math.min(a.top, b.top) - box.top - 26, 22);
+  const path = svg.querySelector('path');
+  path.setAttribute('d', `M${x0},${y0} C${x0 + a.width * .9},${lift} ${x1 - b.width * .5},${lift - 10} ${x1},${y1}`);
+  path.style.setProperty('--len', path.getTotalLength());
+  const [dot, ring] = svg.querySelectorAll('circle');
+  dot.setAttribute('cx', x0); dot.setAttribute('cy', y0); ring.setAttribute('cx', x1); ring.setAttribute('cy', y1);
+}
+function begin() {
+  if (playing) return;
+  playing = true; startTake();
+  intro.classList.add('leaving');
+  setTimeout(() => { intro.hidden = true; }, 1500);
+}
+if (!music) { intro.hidden = true; playing = true; }
+else {
+  drawRoute(); addEventListener('resize', drawRoute);
+  for (const img of intro.querySelectorAll('img')) if (!img.complete) img.addEventListener('load', drawRoute);
+  startBtn.disabled = false; startBtn.textContent = '开始观看'; startBtn.focus({ preventScroll: true });
+  startBtn.addEventListener('click', begin);
+}
+// a hidden tab stops the animation, so stop the music with it and keep the two in step
+if (music) addEventListener('visibilitychange', () => {
+  if (!playing) return;
+  if (document.hidden) { music.pause(); stalled = true; }
+});
+window.__music = music;
+</script>
+</body>
+</html>
