@@ -79,11 +79,11 @@
 <section id="intro" aria-labelledby="intro-title">
   <div class="hang">
     <figure class="moth">
-      <div class="frame"><img src="assets/emperor-moth.webp" alt="梵高《帝王蛾》：一只蓝绿色的帝王蛾停在马蹄莲叶上，上方是红色浆果"></div>
+      <div class="frame"><img src="emperor-moth.webp" alt="梵高《帝王蛾》：一只蓝绿色的帝王蛾停在马蹄莲叶上，上方是红色浆果"></div>
       <figcaption><b>帝王蛾</b><i>Emperor Moth</i>，1889 年，圣雷米<br>布面油画，阿姆斯特丹梵高博物馆藏<span class="role">镜头从这里起飞</span></figcaption>
     </figure>
     <figure class="starry">
-      <div class="frame"><img src="assets/starry-night.webp" alt="梵高《星月夜》：旋转的夜空、新月与星星，下方是柏树、山丘和村庄"></div>
+      <div class="frame"><img src="starry-night.webp" alt="梵高《星月夜》：旋转的夜空、新月与星星，下方是柏树、山丘和村庄"></div>
       <figcaption><b>星月夜</b><i>The Starry Night</i>，1889 年，圣雷米<br>布面油画，纽约现代艺术博物馆藏<span class="role">镜头在这里落幕</span></figcaption>
     </figure>
     <svg class="route" aria-hidden="true"><path/><circle r="4"/><circle class="ring" r="9"/></svg>
@@ -104,8 +104,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 /* Assets. build.py fills these in two ways: as data: URIs for the single-file build (index.html, which
  * runs straight off the disk), or as paths next to the page for the web build (site/, which streams
  * them so the welcome wall appears at once). */
-const MOTH_SRC = 'assets/moth.webp';     // the emperor moth, cut out from Van Gogh's painting
-const MUSIC_URL = 'assets/music.mp3';   // set in the web build; empty when the song is embedded below
+const MOTH_SRC = 'moth.webp';     // the emperor moth, cut out from Van Gogh's painting
+const MUSIC_URL = 'music.mp3';   // set in the web build; empty when the song is embedded below
 const MUSIC_B64 = '';
 
 /* ---------------- seeded randomness (same film every run) ---------------- */
